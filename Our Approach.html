@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Approach | harmony8</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* --- BRAND DESIGN TOKENS --- */
+        :root {
+            --bg-primary: #fbfaf8;    
+            --bg-secondary: #f3f0eb;  
+            --text-dark: #2c302e;     
+            --text-muted: #606662;    
+            --accent-sage: #4a5d4e;   
+            --accent-hover: #364439;
+            --white: #ffffff;
+            --font-serif: 'Playfair Display', serif;
+            --font-sans: 'Montserrat', sans-serif;
+            --transition-fluid: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--bg-primary);
+            color: var(--text-dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        #webgl-ambient-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1;
+            pointer-events: none;
+            opacity: 0.35;
+        }
+
+        .fluid-cursor {
+            width: 24px;
+            height: 24px;
+            border: 1px solid var(--accent-sage);
+            border-radius: 50%;
+            position: fixed;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 9999;
+            will-change: transform;
+            transition: width 0.3s ease, height 0.3s ease, background-color 0.3s ease;
+        }
+
+        .fluid-cursor.hovering {
+            width: 45px;
+            height: 45px;
+            background-color: rgba(74, 93, 78, 0.05);
+        }
+
+        /* --- STICKY NAVIGATION UI --- */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 1.5rem 10%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            background: linear-gradient(to bottom, rgba(251,250,248,0.95), rgba(251,250,248,0));
+            transition: var(--transition-fluid);
+        }
+
+        .logo-wrapper {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            z-index: 101;
+        }
+
+        .header-logo-img {
+            height: 64px;
+            width: auto;
+            margin-right: 12px;
+            object-fit: contain;
+        }
+
+        .nav-right-container {
+            display: flex;
+            align-items: center;
+            gap: 2.5rem;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2.5rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-dark);
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            position: relative;
+            padding-bottom: 4px;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 0;
+            height: 1px;
+            background-color: var(--accent-sage);
+            transition: var(--transition-fluid);
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .lang-switch-btn {
+            background: transparent;
+            border: 1px solid var(--accent-sage);
+            color: var(--text-dark);
+            padding: 0.4rem 0.9rem;
+            font-family: var(--font-sans);
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: var(--transition-fluid);
+            z-index: 101;
+        }
+
+        .lang-switch-btn:hover {
+            background-color: var(--accent-sage);
+            color: var(--white);
+        }
+
+        .menu-toggle {
+            display: none;
+            font-size: 1.2rem;
+            color: var(--text-dark);
+            cursor: pointer;
+            z-index: 101;
+            transition: transform 0.3s ease;
+        }
+
+        /* --- GLOBAL CONTENT ARCHITECTURE --- */
+        #scroll-content-wrapper {
+            position: relative;
+            z-index: 2;
+        }
+
+        section {
+            width: 100%;
+            position: relative;
+            padding: 8rem 10%;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 0.9rem 2.2rem;
+            background-color: var(--accent-sage);
+            color: var(--white);
+            text-decoration: none;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            font-weight: 500;
+            letter-spacing: 2px;
+            border-radius: 4px;
+            border: 1px solid transparent;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            transition: var(--transition-fluid);
+            text-align: center;
+        }
+
+        .btn::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 0;
+            background-color: var(--accent-hover);
+            z-index: -1;
+            transition: var(--transition-fluid);
+        }
+
+        .btn:hover::after {
+            height: 100%;
+        }
+
+        .text-link-premium {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--accent-sage);
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: var(--transition-fluid);
+            margin-top: auto;
+            padding-top: 1rem;
+        }
+
+        .text-link-premium:hover {
+            color: var(--text-dark);
+            transform: translateX(4px);
+        }
+
+        /* --- SECTION 1: ASYMMETRIC APPROACH HERO --- */
+        #approach-hero {
+            padding-top: 14rem;
+            padding-bottom: 8rem;
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .hero-text-content {
+            max-width: 620px;
+        }
+
+        .label-micro {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: var(--accent-sage);
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        #approach-hero h1 {
+            font-family: var(--font-serif);
+            font-size: clamp(2.3rem, 3.8vw, 3.8rem);
+            font-weight: 400;
+            line-height: 1.2;
+            margin-bottom: 2rem;
+            color: var(--text-dark);
+        }
+
+        #approach-hero .hero-desc {
+            font-size: 1.05rem;
+            color: var(--text-muted);
+            font-weight: 300;
+            line-height: 1.8;
+        }
+
+        /* PREMIUM INTERACTIVE COLLAGE */
+        .hero-visual-collage {
+            position: relative;
+            width: 100%;
+            height: 480px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .collage-frame {
+            position: absolute;
+            overflow: hidden;
+            border-radius: 6px;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.06);
+            transition: var(--transition-fluid);
+            will-change: transform;
+        }
+
+        .collage-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: scale 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .collage-frame:hover img {
+            scale: 1.06;
+        }
+
+        .frame-primary {
+            width: 65%;
+            height: 85%;
+            left: 0;
+            top: 0;
+            z-index: 3;
+        }
+
+        .frame-secondary {
+            width: 50%;
+            height: 60%;
+            right: 0;
+            bottom: 0;
+            z-index: 2;
+        }
+
+        /* --- SECTION 2: GRID FRAMEWORK MATRIX --- */
+        #framework-matrix-section {
+            background-color: var(--bg-secondary);
+            padding-top: 10rem;
+            padding-bottom: 10rem;
+        }
+
+        .matrix-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 3.5rem;
+            width: 100%;
+        }
+
+        .matrix-card {
+            background-color: var(--bg-primary);
+            padding: 4rem;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.01);
+            transition: var(--transition-fluid);
+            opacity: 0;
+            transform: translateY(40px);
+        }
+
+        .matrix-card h2 {
+            font-family: var(--font-serif);
+            font-size: 1.8rem;
+            font-weight: 400;
+            margin-bottom: 1.2rem;
+            color: var(--text-dark);
+        }
+
+        .matrix-card p {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            font-weight: 300;
+            line-height: 1.75;
+            margin-bottom: 2rem;
+        }
+
+        /* --- SECTION 3: INTEGRATED LIVING CLOSURE --- */
+        #integrated-living-section {
+            background-color: var(--white);
+            padding-top: 10rem;
+            padding-bottom: 10rem;
+            text-align: center;
+        }
+
+        .closure-container {
+            max-width: 750px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        #integrated-living-section h2 {
+            font-family: var(--font-serif);
+            font-size: clamp(2.2rem, 4vw, 3.2rem);
+            font-weight: 400;
+            color: var(--text-dark);
+            line-height: 1.25;
+        }
+
+        #integrated-living-section p {
+            font-size: 1.05rem;
+            color: var(--text-muted);
+            font-weight: 300;
+            line-height: 1.8;
+            margin-bottom: 1rem;
+        }
+
+        /* --- FOOTER LAYOUT --- */
+        footer {
+            background-color: var(--text-dark);
+            color: rgba(255,255,255,0.6);
+            padding: 6rem 10% 3rem 10%;
+            font-size: 0.85rem;
+        }
+
+        .footer-top {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            padding-bottom: 4rem;
+            margin-bottom: 2.5rem;
+            gap: 2rem;
+        }
+
+        .footer-brand {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .footer-logo-img {
+            height: 64px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        .footer-brand p {
+            max-width: 450px;
+            font-weight: 300;
+            line-height: 1.7;
+        }
+
+        .social-row {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: flex-end;
+            align-items: center;
+        }
+
+        .social-row a {
+            color: rgba(255,255,255,0.6);
+            font-size: 1.2rem;
+            transition: var(--transition-fluid);
+        }
+
+        .social-row a:hover {
+            color: var(--white);
+            transform: translateY(-3px);
+        }
+
+        /* --- RESPONSIVE ADAPTABILITY --- */
+        @media (max-width: 1024px) {
+            header { padding: 1.5rem 6%; }
+            section { padding: 8rem 6%; }
+            #approach-hero { grid-template-columns: 1fr; gap: 5rem; padding-top: 11rem; }
+            .hero-text-content { max-width: 100%; }
+            .hero-visual-collage { height: 420px; }
+            .matrix-container { grid-template-columns: 1fr; gap: 2.5rem; }
+            .matrix-card { padding: 3rem; }
+            footer { padding: 5rem 6% 2rem 6%; }
+            .footer-top { grid-template-columns: 1fr; }
+            .social-row { justify-content: flex-start; margin-top: 1rem; }
+        }
+
+        @media (max-width: 768px) {
+            .fluid-cursor { display: none; }
+            .menu-toggle { display: block; }
+            .nav-right-container { gap: 1.2rem; }
+            .nav-links {
+                position: fixed;
+                top: 0;
+                right: -100%;
+                width: 100%;
+                height: 100vh;
+                background-color: var(--bg-primary);
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                gap: 3rem;
+                z-index: 99;
+                transition: right 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            }
+            .nav-links.active { right: 0; }
+            .nav-links a { font-size: 1.1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="webgl-ambient-layer"></div>
+    <div class="fluid-cursor" id="custom-cursor"></div>
+
+    <header>
+        <a href="index.html" class="logo-wrapper">
+            <img src="Harmony8.png" alt="harmony8 logo" class="header-logo-img">
+        </a>
+        
+        <div class="nav-right-container">
+            <ul class="nav-links">
+                <li><a href="index.html" data-lang-en="Home" data-lang-fr="Accueil">Home</a></li>
+                <li><a href="#approach-hero" data-lang-en="Our Approach" data-lang-fr="Notre Approche">Our Approach</a></li>
+                <li><a href="index.html#horizontal-pin-rail" data-lang-en="Experience" data-lang-fr="Expérience">Experience</a></li>
+                <li><a href="index.html#contact-section" data-lang-en="Consultation" data-lang-fr="Consultation">Consultation</a></li>
+            </ul>
+            <button class="lang-switch-btn" id="lang-toggle-node">FR</button>
+            <div class="menu-toggle" id="hamburger-btn"><i class="fa-solid fa-bars"></i></div>
+        </div>
+    </header>
+
+    <main id="scroll-content-wrapper">
+
+        <!-- ASYMMETRIC HERO INTRODUCTION -->
+        <section id="approach-hero">
+            <div class="hero-text-content">
+                <span class="label-micro load-fade" data-lang-en="The Harmony8 Wellness Framework" data-lang-fr="Le Framework de Bien-être Harmony8">The Harmony8 Wellness Framework</span>
+                <h1 class="load-reveal" data-lang-en="A practical, science-informed approach to everyday wellbeing" data-lang-fr="Une approche pratique et factuelle du bien-être au quotidien">A practical, science-informed approach to everyday wellbeing</h1>
+                <p class="hero-desc load-fade" data-lang-en="Harmony8 is built on eight core principles of naturopathic nutrition that support sustainable health, energy, and performance. Our approach integrates seamlessly into busy professional lifestyles, helping individuals and organisations thrive." data-lang-fr="Harmony8 repose sur huit principes fondamentaux de la nutrition naturopathique pour soutenir durablement la santé, l'énergie et la performance. Notre approche s'intègre harmonieusement aux modes de vie professionnels exigeants, aidant les individus et les organisations à s'épanouir.">
+                    Harmony8 is built on eight core principles of naturopathic nutrition that support sustainable health, energy, and performance. Our approach integrates seamlessly into busy professional lifestyles, helping individuals and organisations thrive.
+                </p>
+            </div>
+            
+            <div class="hero-visual-collage load-fade">
+                <div class="collage-frame frame-primary" data-speed="-0.02">
+                    <img src="https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=800&q=80" alt="Nourishing clean whole foods" data-lang-alt-en="Nourishing clean whole foods" data-lang-alt-fr="Aliments complets et sains">
+                </div>
+                <div class="collage-frame frame-secondary" data-speed="0.03">
+                    <img src="https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?auto=format&fit=crop&w=700&q=80" alt="Minimal clean wellness lifestyle" data-lang-alt-en="Minimal clean wellness lifestyle" data-lang-alt-fr="Mode de vie axé sur le bien-être minimaliste">
+                </div>
+            </div>
+        </section>
+
+        <!-- EIGHT CORE PRINCIPLES MATRIX -->
+        <section id="framework-matrix-section">
+            <div class="matrix-container">
+                
+                <!-- Principle 1 -->
+                <div class="matrix-card">
+                    <h2 data-lang-en="Food as a Foundation for Health" data-lang-fr="L'Alimentation comme Base de la Santé">Food as a Foundation for Health</h2>
+                    <p data-lang-en="We use nutrition strategically to support vitality, resilience, and long-term wellbeing, empowering people to perform at their best, every day." data-lang-fr="Nous utilisons la nutrition de manière stratégique pour soutenir la vitalité, la résilience et le bien-être à long terme, permettant à chacun de donner le meilleur de lui-même au quotidien.">
+                        We use nutrition strategically to support vitality, resilience, and long-term wellbeing, empowering people to perform at their best, every day.
+                    </p>
+                    <a href="#" class="text-link-premium" data-lang-en="Learn how nutrition supports performance" data-lang-fr="Découvrir comment la nutrition soutient la performance">Learn how nutrition supports performance <i class="fa-solid fa-arrow-right-long"></i></a>
+                </div>
+
+                <!-- Principle 2 -->
+                <div class="matrix-card">
+                    <h2 data-lang-en="Whole, Real Foods" data-lang-fr="Des Aliments Vrais et Complets">Whole, Real Foods</h2>
+                    <p data-lang-en="Harmony8 encourages minimally processed, whole foods such as vegetables, fruits, whole grains, nuts, seeds, and quality protein sources to support consistent energy and mental clarity." data-lang-fr="Harmony8 encourage la consommation d'aliments complets et minimalement transformés comme les légumes, fruits, céréales complètes, oléagineux, graines et protéines de qualité pour maintenir l'énergie et la clarté mentale.">
+                        Harmony8 encourages minimally processed, whole foods such as vegetables, fruits, whole grains, nuts, seeds, and quality protein sources to support consistent energy and mental clarity.
+                    </p>
+                    <a href="#" class="text-link-premium" data-lang-en="View our nutrition philosophy" data-lang-fr="Découvrir notre philosophie nutritionnelle">View our nutrition philosophy <i class="fa-solid fa-arrow-right-long"></i></a>
+                </div>
+
+                <!-- Principle 3 -->
+                <div class="matrix-card">
+                    <h2 data-lang-en="Digestive Health Matters" data-lang-fr="L'Importance de la Santé Digestive">Digestive Health Matters</h2>
+                    <p data-lang-en="Optimal digestion and nutrient absorption are essential to overall wellness. By supporting gut health, we help the body function more efficiently from the inside out." data-lang-fr="Une digestion et une absorption optimales des nutriments sont essentielles au bien-être général. En soutenant la santé intestinale, nous aidons le corps à fonctionner plus efficacement de l'intérieur.">
+                        Optimal digestion and nutrient absorption are essential to overall wellness. By supporting gut health, we help the body function more efficiently from the inside out.
+                    </p>
+                    <a href="#" class="text-link-premium" data-lang-en="Discover our holistic approach" data-lang-fr="Découvrir notre approche holistique">Discover our holistic approach <i class="fa-solid fa-arrow-right-long"></i></a>
+                </div>
+
+                <!-- Principle 4 -->
+                <div class="matrix-card">
+                    <h2 data-lang-en="Nutrient-Dense Choices" data-lang-fr="Des Choix Riches en Nutriments">Nutrient-Dense Choices</h2>
+                    <p data-lang-en="Our framework prioritises foods rich in essential nutrients and protective compounds, focusing on quality, variety, and colour rather than empty calories." data-lang-fr="Notre programme donne la priorité aux aliments riches en nutriments essentiels et en composés protecteurs, en mettant l'accent sur la qualité, la variété et la couleur plutôt que sur les calories vides.">
+                        Our framework prioritises foods rich in essential nutrients and protective compounds, focusing on quality, variety, and colour rather than empty calories.
+                    </p>
+                    <a href="#" class="text-link-premium" data-lang-en="See what a nutrient dense day looks like" data-lang-fr="Voir à quoi ressemble une journée riche en nutriments">See what a nutrient dense day looks like <i class="fa-solid fa-arrow-right-long"></i></a>
+                </div>
+
+                <!-- Principle 5 -->
+                <div class="matrix-card">
+                    <h2 data-lang-en="Balance Over Extremes" data-lang-fr="L'Équilibre Plutôt que les Extrêmes">Balance Over Extremes</h2>
+                    <p data-lang-en="We promote realistic, sustainable habits instead of restrictive or short-term diets, making healthy choices easier to maintain at work and at home." data-lang-fr="Nous promouvons des habitudes réalistes et durables plutôt que des régimes restrictifs ou à court terme, rendant les choix sains plus faciles à maintenir au travail comme à la maison.">
+                        We promote realistic, sustainable habits instead of restrictive or short-term diets, making healthy choices easier to maintain at work and at home.
+                    </p>
+                    <a href="#" class="text-link-premium" data-lang-en="Support sustainable eating habits" data-lang-fr="Soutenir des habitudes alimentaires durables">Support sustainable eating habits <i class="fa-solid fa-arrow-right-long"></i></a>
+                </div>
+
+                <!-- Principle 6 -->
+                <div class="matrix-card">
+                    <h2 data-lang-en="Personalised, Inclusive Nutrition" data-lang-fr="Une Nutrition Personnalisée et Inclusive">Personalised, Inclusive Nutrition</h2>
+                    <p data-lang-en="Harmony8 recognises that no two individuals are the same. Our approach adapts to different lifestyles, preferences, and health needs, supporting inclusivity and long-term engagement." data-lang-fr="Harmony8 reconnaît que chaque individu est unique. Notre approche s'adaptet aux différents modes de vie, préférences et besoins de santé, favorisant l'inclusion et un engagement à long terme.">
+                        Harmony8 recognises that no two individuals are the same. Our approach adapts to different lifestyles, preferences, and health needs, supporting inclusivity and long-term engagement.
+                    </p>
+                    <a href="#" class="text-link-premium" data-lang-en="Request a tailored wellness programme" data-lang-fr="Demander un programme de bien-être sur mesure">Request a tailored wellness programme <i class="fa-solid fa-arrow-right-long"></i></a>
+                </div>
+
+                <!-- Principle 7 -->
+                <div class="matrix-card">
+                    <h2 data-lang-en="Supporting the Body’s Natural Resilience" data-lang-fr="Soutenir la Résilience Naturelle du Corps">Supporting the Body’s Natural Resilience</h2>
+                    <p data-lang-en="Rather than quick fixes, we focus on strengthening the body’s natural ability to maintain balance, recover, and adapt to daily demands." data-lang-fr="Plutôt que des solutions éphémères, nous nous concentrons sur le renforcement de la capacité naturelle du corps à maintenir son équilibre, à récupérer et à s'adapter aux exigences quotidiennes.">
+                        Rather than quick fixes, we focus on strengthening the body’s natural ability to maintain balance, recover, and adapt to daily demands.
+                    </p>
+                    <a href="#" class="text-link-premium" data-lang-en="Understand our long-term wellness model" data-lang-fr="Comprendre notre modèle de bien-être à long terme">Understand our long-term wellness model <i class="fa-solid fa-arrow-right-long"></i></a>
+                </div>
+
+                <!-- Principle 8 -->
+                <div class="matrix-card">
+                    <h2 data-lang-en="Prevention for Long-Term Wellbeing" data-lang-fr="La Prévention pour un Bien-être Durable">Prevention for Long-Term Wellbeing</h2>
+                    <p data-lang-en="By embedding consistent, nourishing habits, Harmony8 supports proactive health and helps reduce future wellbeing risks." data-lang-fr="En ancrant des habitudes saines et régulières, Harmony8 soutient une approche proactive de la santé et aide à réduire les risques futurs liés au bien-être.">
+                        By embedding consistent, nourishing habits, Harmony8 supports proactive health and helps reduce future wellbeing risks.
+                    </p>
+                    <a href="#" class="text-link-premium" data-lang-en="Invest in preventive health services" data-lang-fr="Investir dans des services de santé préventive">Invest in preventive health services <i class="fa-solid fa-arrow-right-long"></i></a>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- MINDFUL EATING CLOSURE HERO CONTAINER -->
+        <section id="integrated-living-section">
+            <div class="closure-container" id="closure-trigger">
+                <span class="label-micro" data-lang-en="Mindful Eating, Integrated Living" data-lang-fr="Alimentation Consciente, Vie Intégrée">Mindful Eating, Integrated Living</span>
+                <h2 data-lang-en="Bring mindful wellbeing to your home and workplace" data-lang-fr="Invitez le bien-être conscient chez vous et dans votre espace de travail">Bring mindful wellbeing to your home and workplace</h2>
+                <p data-lang-en="We encourage awareness around how, when, and why people eat, acknowledging the impact of stress, routines, and workplace culture on health." data-lang-fr="Nous encourageons une prise de conscience sur comment, quand et pourquoi nous mangeons, en reconnaissant l'impact du stress, des routines et de la culture d'entreprise sur la santé.">
+                    We encourage awareness around how, when, and why people eat, acknowledging the impact of stress, routines, and workplace culture on health.
+                </p>
+                <a href="index.html#contact-section" class="btn" data-lang-en="Book a discovery call" data-lang-fr="Réserver un appel de découverte">Book a discovery call</a>
+            </div>
+        </section>
+
+        <!-- BRAND FOOTER -->
+        <footer>
+            <div class="footer-top">
+                <div class="footer-brand">
+                    <div class="footer-logo-container">
+                        <img src="Harmony8.png" alt="harmony8 logo" class="footer-logo-img">
+                    </div>
+                    <p data-lang-en="Synthesising conventional medical science with naturopathic nutrition principles to deliver an elevated, high-touch model of health optimization tailored for long-term vitality." data-lang-fr="Synthèse de la science médicale conventionnelle et des principes de la nutrition naturopathique pour offrir un modèle haut de gamme d'optimisation de la santé, conçu pour une vitalité durable.">
+                        Synthesising conventional medical science with naturopathic nutrition principles to deliver an elevated, high-touch model of health optimization tailored for long-term vitality.
+                    </p>
+                </div>
+                <div class="social-row">
+                    <a href="#"><i class="fa-brands fa-linkedin-in"></i></a>
+                    <a href="#"><i class="fa-brands fa-instagram"></i></a>
+                </div>
+            </div>
+            <div style="font-size: 0.75rem; opacity: 0.5;" data-lang-en="&copy; 2026 harmony8. All Rights Reserved. Delivered as a premium, science-led health experience." data-lang-fr="&copy; 2026 harmony8. Tous droits réservés. Conçu comme une expérience de santé haut de gamme axée sur la science.">
+                &copy; 2026 harmony8. All Rights Reserved. Delivered as a premium, science-led health experience.
+            </div>
+        </footer>
+
+    </main>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            gsap.registerPlugin(ScrollTrigger);
+
+            /* --- MULTI-LANGUAGE FIXED INJECTION ENGINE --- */
+            const langToggleButton = document.getElementById('lang-toggle-node');
+            const htmlNode = document.documentElement;
+
+            function setLanguage(lang) {
+                document.querySelectorAll('[data-lang-en][data-lang-fr]').forEach(el => {
+                    el.innerHTML = el.getAttribute(`data-lang-${lang}`);
+                });
+                
+                document.querySelectorAll('[data-lang-alt-en][data-lang-alt-fr]').forEach(img => {
+                    img.setAttribute('alt', img.getAttribute(`data-lang-alt-${lang}`));
+                });
+
+                setTimeout(() => { ScrollTrigger.refresh(); }, 150);
+            }
+
+            langToggleButton.addEventListener('click', () => {
+                const currentLang = htmlNode.getAttribute('lang') || 'en';
+                const newLang = currentLang === 'en' ? 'fr' : 'en';
+                
+                htmlNode.setAttribute('lang', newLang);
+                langToggleButton.innerText = newLang === 'en' ? 'FR' : 'EN';
+                
+                setLanguage(newLang);
+            });
+
+            /* --- ORGANIC WEBGL CANVAS AMBIENCE --- */
+            const webglContainer = document.getElementById('webgl-ambient-layer');
+            const webglScene = new THREE.Scene();
+            const webglCamera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const webglRenderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            
+            webglRenderer.setSize(window.innerWidth, window.innerHeight);
+            webglContainer.appendChild(webglRenderer.domElement);
+
+            const nodeGeometry = new THREE.BufferGeometry();
+            const nodalCount = window.innerWidth > 768 ? 120 : 60;
+            const locationsArray = new Float32Array(nodalCount * 3);
+
+            for(let i=0; i<nodalCount * 3; i++) {
+                locationsArray[i] = (Math.random() - 0.5) * 8;
+            }
+
+            nodeGeometry.setAttribute('position', new THREE.BufferAttribute(locationsArray, 3));
+            
+            const pointMaterial = new THREE.PointsMaterial({
+                size: window.innerWidth > 768 ? 0.018 : 0.03,
+                color: '#4a5d4e',
+                transparent: true,
+                opacity: 0.4
+            });
+
+            const pointsMesh = new THREE.Points(nodeGeometry, pointMaterial);
+            webglScene.add(pointsMesh);
+            webglCamera.position.z = 2.5;
+
+            let structuralTargetX = 0, structuralTargetY = 0;
+            window.addEventListener('mousemove', (e) => {
+                structuralTargetX = (e.clientX / window.innerWidth - 0.5) * 0.2;
+                structuralTargetY = (e.clientY / window.innerHeight - 0.5) * 0.2;
+            });
+
+            function executeFrameTick() {
+                pointsMesh.rotation.y += 0.0006;
+                pointsMesh.rotation.x += (structuralTargetY - pointsMesh.rotation.x) * 0.03;
+                pointsMesh.rotation.y += (structuralTargetX - pointsMesh.rotation.y) * 0.03;
+
+                webglRenderer.render(webglScene, webglCamera);
+                requestAnimationFrame(executeFrameTick);
+            }
+            executeFrameTick();
+
+            /* --- LUXURY INTERPOLATED MOUSE FOLLOWER --- */
+            const cursor = document.getElementById('custom-cursor');
+            let targetMouseX = 0, targetMouseY = 0;
+            let currentBallX = 0, currentBallY = 0;
+            const interpolationSpeed = 0.1;
+
+            window.addEventListener('mousemove', (e) => {
+                targetMouseX = e.clientX;
+                targetMouseY = e.clientY;
+            });
+
+            function renderCursorMovement() {
+                currentBallX += (targetMouseX - currentBallX) * interpolationSpeed;
+                currentBallY += (targetMouseY - currentBallY) * interpolationSpeed;
+                cursor.style.transform = `translate3d(${currentBallX}px, ${currentBallY}px, 0)`;
+                requestAnimationFrame(renderCursorMovement);
+            }
+            
+            if (window.innerWidth > 768) {
+                renderCursorMovement();
+
+                // Cursor Expansion Interactions
+                const interactiveNodes = document.querySelectorAll('a, button, .matrix-card, .collage-frame');
+                interactiveNodes.forEach(node => {
+                    node.addEventListener('mouseenter', () => cursor.classList.add('hovering'));
+                    node.addEventListener('mouseleave', () => cursor.classList.remove('hovering'));
+                });
+            }
+
+            /* --- INTERACTIVE HERO COLLAGE MOUSE-FOLLOW (SKEW / PARALLAX) --- */
+            if (window.innerWidth > 1024) {
+                const collageFrames = document.querySelectorAll('.collage-frame');
+                window.addEventListener('mousemove', (e) => {
+                    const normalizedX = (e.clientX / window.innerWidth) - 0.5;
+                    const normalizedY = (e.clientY / window.innerHeight) - 0.5;
+
+                    collageFrames.forEach(frame => {
+                        const translationFactor = parseFloat(frame.getAttribute('data-speed')) * 80;
+                        gsap.to(frame, {
+                            x: normalizedX * translationFactor,
+                            y: normalizedY * translationFactor,
+                            rotationY: normalizedX * 8,
+                            rotationX: -normalizedY * 8,
+                            duration: 1.2,
+                            ease: "power2.out",
+                            overwrite: "auto"
+                        });
+                    });
+                });
+            }
+
+            /* --- ENTRANCE ANIMATION TIMELINE --- */
+            const entranceTimeline = gsap.timeline({ defaults: { ease: "power4.out" } });
+            entranceTimeline.from(".load-reveal", {
+                y: 60,
+                duration: 1.4,
+                stagger: 0.1
+            }).from(".load-fade", {
+                opacity: 0,
+                y: 25,
+                duration: 1.2,
+                stagger: 0.15
+            }, "-=1.0");
+
+            /* --- SCROLLTRIGGER REVEALS FOR MATRIX & CLOSURE --- */
+            gsap.utils.toArray('.matrix-card').forEach((card, idx) => {
+                gsap.to(card, {
+                    scrollTrigger: {
+                        trigger: card,
+                        start: "top 88%",
+                        toggleActions: "play none none none"
+                    },
+                    opacity: 1,
+                    y: 0,
+                    duration: 1.2,
+                    ease: "power3.out",
+                    delay: (idx % 2) * 0.15
+                });
+            });
+
+            gsap.to('.closure-container', {
+                scrollTrigger: {
+                    trigger: '#closure-trigger',
+                    start: "top 85%"
+                },
+                opacity: 1,
+                y: 0,
+                duration: 1.4,
+                ease: "power3.out"
+            });
+
+            /* --- MOBILE NAVIGATION HANDLER --- */
+            const hamburgerBtn = document.getElementById('hamburger-btn');
+            const navLinksContainer = document.querySelector('.nav-links');
+            
+            hamburgerBtn.addEventListener('click', () => {
+                navLinksContainer.classList.toggle('active');
+                const isOpen = navLinksContainer.classList.contains('active');
+                hamburgerBtn.innerHTML = isOpen ? '<i class="fa-solid fa-xmark"></i>' : '<i class="fa-solid fa-bars"></i>';
+            });
+
+            window.addEventListener('resize', () => {
+                webglCamera.aspect = window.innerWidth / window.innerHeight;
+                webglCamera.updateProjectionMatrix();
+                webglRenderer.setSize(window.innerWidth, window.innerHeight);
+            });
+        });
+    </script>
+</body>
+</html>
